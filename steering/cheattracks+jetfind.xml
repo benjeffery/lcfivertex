@@ -1,0 +1,202 @@
+<!--##########################################
+    #                                        #
+    #  Cheat Tracks, Clusters and jet find   #
+    #                                        #
+    #  hit collection names for LDC01_05Sc   #
+    #                                        #
+    ##########################################-->
+<marlin>
+    <execute>
+        <processor name="MyMaterialDB" />
+        <processor name="MyFTDDigiProcessor" />
+        <processor name="MyTPCDigiProcessor" />
+        <processor name="MyVTXDigiProcessor" />
+        <processor name="MySimpleCaloDigi" />
+        <processor name="MyClusterCheater5_3" /> 
+        <processor name="MyTrackCheaterWithFit" />
+        <processor name="MyWolf" />
+        <processor name="MySelectReconstructedParticle" />
+        <processor name="MySatoruJetFinderProcessor" />
+        <processor name="MyLCIOOutputProcessor" />
+    </execute>
+    <global>
+        <parameter name="LCIOInputFiles">myfile.slcio</parameter>
+        <-- limit the number of processed records (run+evt): -->
+        <!--parameter name="MaxRecordNumber" value="21" /-->
+        <parameter name="SupressCheck" value="false" />
+        <parameter name="GearXMLFile">GearOutput.xml</parameter>
+    </global>
+    <processor name="MyMaterialDB" type="MaterialDB">
+        <!-- Material Database builder-->
+        <parameter name="UseExtrapolations" type="int">1</parameter>
+        <parameter name="UseMaterials" type="int">1</parameter>
+    </processor>
+    <processor name="MyFTDDigiProcessor" type="FTDDigiProcessor">
+        <!-- FTD Digitization-->
+        <parameter name="CollectionName" type="string" lcioInType="SimTrackerHit">SFtd02_FTD</parameter>
+        <parameter name="PointResolution" type="float">0.010</parameter>
+        <parameter name="RemoveDrays" type="int">0</parameter>
+        <!--Name of the TrackerHit output collection-->
+        <parameter name="OutputCollectionName" type="string" lcioOutType="TrackerHit" value="FTDTrackerHits" />
+    </processor>
+    <processor name="MyTPCDigiProcessor" type="TPCDigiProcessor">
+        <!--Produces TPC TrackerHit collection from SimTrackerHit collection, smeared in RPhi and Z-->
+        <parameter name="CollectionName" type="string" lcioInType="SimTrackerHit">tpc07_TPC</parameter>
+        <parameter name="TPCTrackerHitsCol" type="string" lcioOutType="TrackerHit">TPCTrackerHits</parameter>
+    </processor>
+    <processor name="MyVTXDigiProcessor" type="VTXDigiProcessor">
+        <!-- VTX Digitization-->
+        <parameter name="Debug" type="int">1</parameter>
+        <parameter name="PointResolutionRPhi_VTX" type="float">0.004</parameter>
+        <parameter name="PointResolutionZ_VTX" type="float">0.004</parameter>
+        <parameter name="PointResolutionRPhi_SIT" type="float">0.01</parameter>
+        <parameter name="PointResolutionZ_SIT" type="float">0.01</parameter>
+        <parameter name="VTXCollectionName" type="string" lcioInType="SimTrackerHit">vxd01_VXD</parameter>
+        <parameter name="SITCollectionName" type="string" lcioInType="SimTrackerHit">sit01_SIT</parameter>
+        <parameter name="RemoveDrays" type="int">0</parameter>
+        <!--Name of the sit TrackerHit output collection-->
+        <parameter name="SITHitCollection" type="string" lcioOutType="TrackerHit" value="SITTrackerHits" />
+        <!--Name of the vxd TrackerHit output collection-->
+        <parameter name="VTXHitCollection" type="string" lcioOutType="TrackerHit" value="VTXTrackerHits" />
+    </processor>
+    <processor name="MySimpleCaloDigi" type="SimpleCaloDigi">
+        <!--Performs simple digitization of sim calo hits...-->
+        <!--Calibration coefficients for ECAL-->
+        <parameter name="CalibrECAL" type="FloatVec">31.3 83</parameter>
+        <!--Calibration coefficients for HCAL-->
+        <parameter name="CalibrHCAL" type="FloatVec">27.3</parameter>
+        <!--ECAL Collection Names-->
+        <parameter name="ECALCollections" type="StringVec">SEcal02_EcalBarrel SEcal02_EcalEndcap</parameter>
+        <!--Index of ECal Layers-->
+        <parameter name="ECALLayers" type="IntVec">30 100</parameter>
+        <!--ECAL Collection of real Hits-->
+        <parameter name="ECALOutputCollection" type="string">ECAL</parameter>
+        <!--Threshold for ECAL Hits in GeV-->
+        <parameter name="ECALThreshold" type="float">1e-04</parameter>
+        <!--HCAL Collection Names-->
+        <parameter name="HCALCollections" type="StringVec">SHcal03_HcalBarrelEnd SHcal03_HcalBarrelReg SHcal03_HcalEndcaps</parameter>
+        <!--Index of HCal Layers-->
+        <parameter name="HCALLayers" type="IntVec">100</parameter>
+        <!--HCAL Collection of real Hits-->
+        <parameter name="HCALOutputCollection" type="string">HCAL</parameter>
+        <!--Threshold for HCAL Hits in GeV-->
+        <parameter name="HCALThreshold" type="float">0.0004</parameter>
+        <!--Digital Ecal-->
+        <parameter name="IfDigitalEcal" type="int">0</parameter>
+        <!--Digital Hcal-->
+        <parameter name="IfDigitalHcal" type="int">0</parameter>
+        <!--CaloHit Relation Collection-->
+        <parameter name="RelationOutputCollection" type="string">RelationCaloHit</parameter>
+    </processor>
+    <processor name="MyClusterCheater5_3" type="ClusterCheater5_3">
+        <!--Creates true clusters...-->
+        <!--Calorimeter Collection Names-->
+        <parameter name="CaloCollections" type="StringVec">ECAL HCAL</parameter>
+        <!--Not to connect hist from  backscatter-->
+        <parameter name="CutBackscatter" type="int">1</parameter>
+        <!--Calorimeter Collection Names-->
+        <parameter name="MCParticleCollection" type="string">MCParticle</parameter>
+        <!--Minimal number of hits in cluster-->
+        <parameter name="MinHitsInCluster" type="int">0</parameter>
+        <!--SimCaloHit to CaloHit Relations Collection Name-->
+        <parameter name="RelCollection" type="string">RelationCaloHit</parameter>
+        <!--Collection of True Clusters-->
+        <parameter name="TrueClusterCollection" type="string">TrueClusters</parameter>
+        <!--Relation Collection Cluster to MCP-->
+        <parameter name="TrueClusterToMCPCollection" type="string">TrueClusterToMCP</parameter>
+    </processor>
+    <processor name="MyTrackCheaterWithFit" type="TrackCheater">
+        <!--Creates true tracks...-->
+        <parameter name="ECut" type="float">0.1</parameter>
+        <parameter name="HitToHelixDist" type="float">10.0</parameter>
+        <parameter name="MinimalHits" type="float">3</parameter>
+        <parameter name="TrackerHitCollections" type="StringVec" lcioInType="TrackerHit">VTXTrackerHits FTDTrackerHits SITTrackerHits TPCTrackerHits</parameter>
+        <parameter name="TrueTrackCollection" type="string" lcioOutType="Track">FittedTrueTracks</parameter>
+        <parameter name="MCTrueTrackRelCollectionName" type="string" lcioOutType="LCRelation">FittedTrueTracksMCP</parameter>
+        <parameter name="FitTrueTrack" type="int">1</parameter>
+        <parameter name="UseExtraPoint" type="int">0</parameter>
+    </processor>
+    <processor name="MyWolf" type="Wolf">
+        <!--Particle Reconstruction-->
+        <!--Cluster Collection Name-->
+        <parameter name="ClusterCollection" type="string">TrueClusters</parameter>
+        <!--Dist Merge Cut-->
+        <parameter name="DistMergeCut" type="float">150</parameter>
+        <!--Distance from Track Seed to Cluster-->
+        <parameter name="DistanceTrackToCluster" type="float">50</parameter>
+        <!--Fraction of EM Energy-->
+        <parameter name="FractionEM" type="float">0.95</parameter>
+        <!--Hcal Resolution-->
+        <parameter name="HcalResolution" type="float">0.5</parameter>
+        <!--Lower Momentum-->
+        <parameter name="LowerMomentum" type="float">5</parameter>
+        <!--Merge Clusters-->
+        <parameter name="MergeClusters" type="int">1</parameter>
+        <!--Hits used in extrapolation-->
+        <parameter name="NHitsInFit" type="int">40</parameter>
+        <!--Native Track Fitter-->
+        <parameter name="NativeTrackFitter" type="int">0</parameter>
+        <!--Particle Collection Name-->
+        <parameter name="ParticleCollection" type="string">RecoParticles</parameter>
+        <!--Cut on D0 for tracks-->
+        <parameter name="RPhiCut" type="float">50</parameter>
+        <!--Track Collection Name-->
+        <parameter name="TrackCollection" type="string">FittedTrueTracks</parameter>
+        <!--Cut on Z0 for tracks-->
+        <parameter name="ZCut" type="float">50</parameter>
+    </processor>
+    <processor name="MySelectReconstructedParticle" type="SelectReconstructedParticle">
+        <!--SelectReconstructedParticle: Selects particles from all reconstructed particles to be used for the thrust finder-->
+        <!--Minimum momentum a particle has to have to be used for the thrust calculation-->
+        <parameter name="MinimumMomentum" type="float">0.02</parameter>
+        <!--Collection of reconstructed particles to chose from-->
+        <parameter name="inputCollectionName" type="string">RecoParticles</parameter>
+        <!--Collection of selected reconstructed particles-->
+        <parameter name="outputCollectionName" type="string">SelectedRecoParticles</parameter>
+    </processor>
+    <processor name="MySatoruJetFinderProcessor" type="SatoruJetFinderProcessor">
+        <!--A multi algorithm jet finder-->
+        <!--Set debug level-->
+        <!--parameter name="Debug" type="int">0 </parameter-->
+        <!--Jet energycut for cone jet finding algorithm with variable number of jets-->
+        <!--parameter name="EpsCone" type="float">7 </parameter-->
+        <!--mode for manual alogorithm selection, see documentation for details-->
+        <!--parameter name="GlobalMode" type="string">0A </parameter-->
+        <!--Collection of reconstructed particles-->
+        <parameter name="InputCollection" type="string">SelectedRecoParticles</parameter>
+        <!--Merging mode, if mode is "manual"-->
+        <!--parameter name="MergingMode" type="int">0 </parameter-->
+        <!--Merging threshold, if mode is "manual"-->
+        <!--parameter name="MergingThreshold" type="float">0 </parameter-->
+        <!--Select predefined algorithms for jet finding(or "manual")-->
+        <parameter name="Mode" type="string">durhamycut</parameter>
+        <!--Force everything to N jets(if supported by current mode)-->
+        <!--parameter name="NJetRequested" type="int">2 </parameter-->
+        <!--Name of collection with the found jets-->
+        <parameter name="OutputCollection" type="string">Jets</parameter>
+        <!--Primary jet finding mode, if mode is "manual"-->
+        <!--parameter name="PrimaryJetFindingMode" type="int">0 </parameter-->
+        <!--Half cone opening angle for cone jet finding algorithm with variable number of jet-->
+        <!--parameter name="RCone" type="float">0.7 </parameter-->
+        <!--Secong jet finding mode, if mode is "manual"-->
+        <!--parameter name="SecondJetFindingMode" type="int">0 </parameter-->
+        <!--Threshold, if mode is "manual"-->
+        <!--parameter name="Threshold" type="float">0 </parameter-->
+        <!--YCut for jet finding algorithm(if supported by current mode)-->
+        <parameter name="YCut" type="float">0.04</parameter>
+    </processor>
+    <processor name="MyLCIOOutputProcessor" type="LCIOOutputProcessor">
+        <!--Writes the current event to the specified LCIO outputfile. Needs to be the last ActiveProcessor.-->
+        <!--drops the named collections from the event-->
+        <!--<parameter name="DropCollectionNames" type="StringVec">MCParticle vxd01_VXD sit01_SIT tpc07_TPC SFtd02_FTD tpc07_FCH FTDTrackerHits SITTrackerHits TPCTrackerHits VTXTrackerHits LumiCalS_LumiCal SEcal02_EcalBarrel SEcal02_EcalEndcap SHcal03_HcalBarrelEnd SHcal03_HcalBarrelReg SHcal03_HcalEndcaps HCAL ECAL RelationCaloHit TrueClusters TrueClustersToMCP</parameter-->
+        <!--parameter name="DropCollectionNames" type="StringVec">RelationCaloHit</parameter-->
+        <!--drops all collections of the given type from the event-->
+        <!--parameter name="DropCollectionTypes" type="StringVec">SimTrackerHit SimCalorimeterHit TrackerHit CalorimeterHit</parameter-->
+        <!-- name of output file -->
+        <parameter name="LCIOOutputFile" type="string">cheatout.slcio</parameter>
+        <!--write mode for output file:  WRITE_APPEND or WRITE_NEW-->
+        <parameter name="LCIOWriteMode" type="string">WRITE_NEW</parameter>
+        <!--will split output file if size in kB exceeds given value - doesn't work with APPEND and NEW-->
+        <!--parameter name="SplitFileSizekB" type="int">1992294 </parameter-->
+    </processor>
+</marlin>

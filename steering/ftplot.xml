@@ -1,0 +1,84 @@
+<marlin>
+ <execute>
+  <processor name="MyPlot"/>
+  <processor name="MyAIDAProcessor"/>
+  <processor name="MyLCFIAIDAPlotProcessor"/>
+ </execute>
+
+ <global>
+  <parameter name="LCIOInputFiles"> vertexchargeout.slcio </parameter>
+  <!-- limit the number of processed records (run+evt): -->  
+  <!-- parameter name="MaxRecordNumber" value="1000000000" /-->  
+  <!-- parameter name="SkipNEvents" value="0" /-->  
+  <parameter name="SupressCheck" value="false" />  
+  <!--- parameter name="GearXMLFile"> GearOutput.xml </parameter> -->  
+ </global>
+
+ <processor name="MyPlot" type="Plot">
+ <!--Plots various outputs from the flavour tag-->
+  <!--Name of the collection of ReconstructedParticles that is the jet-->
+  <parameter name="JetCollectionName" type="string">FTSelectedJets </parameter>
+  <!--Filename for the output-->
+  <parameter name="OutputFilename" type="string">PlotProcessorOutput </parameter>
+</processor>
+
+
+ <processor name="MyAIDAProcessor" type="AIDAProcessor">
+ <!--Processor that handles AIDA files. Creates on directory per processor.  Processors only need to create and fill the histograms, clouds and tuples. Needs to be the first ActiveProcessor-->
+  <!-- compression of output file 0: false >0: true (default) -->
+  <parameter name="Compress" type="int">0 </parameter>
+  <!-- filename without extension-->
+  <parameter name="FileName" type="string">LCFIPlot </parameter>
+  <!-- type of output file xml (default) or root ( only OpenScientist)-->
+  <parameter name="FileType" type="string">xml</parameter>
+</processor>
+
+
+
+ <processor name="MyLCFIAIDAPlotProcessor" type="LCFIAIDAPlotProcessor">
+ <!--Creates an AIDA plot of the efficiency purity values and various other things. Make sure that MarlinAIDAProcessor is run before this.-->
+  <!--Cut determining the Neural Net cut used to select B-Jets-->
+  <!--parameter name="BTagNNCut" type="double">0.7 </parameter-->
+  <!--Name of collection containing the vertex charge of the jets, assuming they are B-jets-->
+  <parameter name="BVertexChargeCollection" type="string" lcioInType="LCFloatVec">BCharge </parameter>
+  <!--Cut determining the Neural Net cut used to select C-Jets-->
+  <!--parameter name="CTagNNCut" type="double">0.7 </parameter-->
+  <!--Name of collection containing the vertex charge of the jets, assuming they are C-jets-->
+  <parameter name="CVertexChargeCollection" type="string" lcioInType="LCFloatVec">CCharge </parameter>
+  <!--Cut determining the maximum cos(theta) of the jet.  Default: |cos(theta)|<0.9-->
+  <!--parameter name="CosThetaJetMax" type="double">0.9 </parameter-->
+  <!--Cut determining the minimum cos(theta) of the jet.  Default: no lower cut.-->
+  <!--parameter name="CosThetaJetMin" type="double">0 </parameter-->
+  <!--Names of the LCFloatVec Collections that contain the flavour tags (one purity efficiency plot per tag) (in same order as jet collection)-->
+  <parameter name="FlavourTagCollections" type="StringVec">FlavourTag  </parameter>
+  <!--Name of the collection of ReconstructedParticles that is the jet-->
+  <parameter name="JetCollectionName" type="string" lcioInType="ReconstructedParticle">FTSelectedJets </parameter>
+  <!--Set true to make a tuple of the flavour tag input variables.  Default is true.-->
+  <!--parameter name="MakeTuple" type="bool">true </parameter-->
+  <!--Output filename for the NN values (output).  Only used if PrintNeuralNetOutput parameter is true.  If left blank, output will be directed to standard out.-->
+  <!--parameter name="NeuralNetOutputFile" type="string"> </parameter-->
+  <!--Cut determining the maximum momentum of the jet.  Default: 10000 GeV/c-->
+  <!--parameter name="PJetMax" type="double">10000 </parameter-->
+  <!--Cut determining the minimum momentum of the jet.  Default: no lower cut.-->
+  <!--parameter name="PJetMin" type="double">0 </parameter-->
+  <!--Set true if you want a print-out of the NN values (output) for the various flavour tags-->
+  <!--parameter name="PrintNeuralNetOutput" type="bool">false </parameter-->
+  <!--Names of the LCFloatVec Collections that contain the flavour tag inputs (in same order as jet collection)-->
+  <parameter name="TagInputsCollections" type="StringVec">FlavourTagInputs  </parameter>
+  <!--Name of the LCIntVec collection containing the true flavour of the jets (same order as jets)-->
+  <parameter name="TrueJetFlavourCollection" type="string" lcioInType="LCIntVec">TrueJetFlavour </parameter>
+  <!--Name of the LCFloatVec collection containing the true hadron charge of the jets (same order as jets)-->
+  <parameter name="TrueJetHadronChargeCollection" type="string" lcioInType="LCFloatVec">TrueJetHadronCharge </parameter>
+  <!--Name of the LCIntVec collection containing the true PDG code of the jets (same order as jets)-->
+  <parameter name="TrueJetPDGCodeCollection" type="string" lcioInType="LCIntVec">TrueJetPDGCode </parameter>
+  <!--Name of the LCFloatVec collection containing the true parton charge of the jets (same order as jets)-->
+  <parameter name="TrueJetPartonChargeCollection" type="string" lcioInType="LCFloatVec">TrueJetPartonCharge </parameter>
+  <!--Integer parameter determing which FlavourTag Collection to use the determine C-Jets and B-Jets in Vertex Charge Plots-->
+  <!--parameter name="UseFlavourTagCollectionForVertexCharge" type="int">0 </parameter-->
+  <!--Name of the collection that holds the Vertices-->
+  <parameter name="VertexCollectionName" type="string" lcioInType="Vertex">ZVRESVertices </parameter>
+</processor>
+
+
+
+</marlin>

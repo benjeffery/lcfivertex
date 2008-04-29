@@ -1,0 +1,61 @@
+<!--
+This is an example steering file to show how neural networks can be trained 
+using the NeuralNetTrainer processor.
+-->
+<marlin>
+	<execute>
+		<!--
+		Assume everything has already been run that needs to be. See the comment above the
+		NeuralNetTrainer processor description for more details.
+		-->
+		<processor name="MyNeuralNetTrainer" type="NeuralNetTrainer"/>
+	</execute>
+
+	<!--
+		Obviously change these bits for your system.
+	-->
+	<global>
+		<parameter name="LCIOInputFiles">SomeExampleFile.slcio</parameter>
+		<parameter name="SupressCheck" value="false"/>
+		<!--parameter name="GearXMLFile"> GearIsntReallyNeededForThisBit.xml </parameter-->
+	</global>
+
+	<!--
+		This example shows how to train all of the networks and save the output as xml. You could also just
+		train a few at a time by removing the filename parameters of the networks you don't want trained. The
+		processor needs the following from the LCIO file:
+		 - A collection of ReconstructedParticles that represents the jets found
+		 - A collection of LCFloatVecs that contains the stored flavour tag variable (d0 significance,
+		   joint probability etcetera)
+		 - A collection of LCIntVecs that holds the true jet flavour of the jets.
+
+		In practice this means you must have a file that has already had a jet finder
+		(say, SatoruJetFinderProcessor); FlavourTagInputsProcessor; and TrueAngularJetFlavourProcessor
+		run on it. For examples of running the last two have a look at fti.xml and truejetflavour.xml
+		from the vertexpackage example steering files.
+	-->
+	<processor name="MyNeuralNetTrainer" type="NeuralNetTrainer">
+		<!-- The output filenams for the networks that we want trained. -->
+		<parameter name="Filename-b_net-1vtx" type="string"> nnets/b_net-1vtx.xml </parameter>
+		<parameter name="Filename-b_net-2vtx" type="string"> nnets/b_net-2vtx.xml </parameter>
+		<parameter name="Filename-b_net-3plusvtx" type="string"> nnets/b_net-3plusvtx.xml </parameter>
+		<parameter name="Filename-bc_net-1vtx" type="string"> nnets/bc_net-1vtx.xml </parameter>
+		<parameter name="Filename-bc_net-2vtx" type="string"> nnets/bc_net-2vtx.xml </parameter>
+		<parameter name="Filename-bc_net-3plusvtx" type="string"> nnets/bc_net-3plusvtx.xml </parameter>
+		<parameter name="Filename-c_net-1vtx" type="string"> nnets/c_net-1vtx.xml </parameter>
+		<parameter name="Filename-c_net-2vtx" type="string"> nnets/c_net-2vtx.xml </parameter>
+		<parameter name="Filename-c_net-3plusvtx" type="string"> nnets/c_net-3plusvtx.xml </parameter>
+
+		<!-- This is the output from your jet finder -->
+		<parameter name="JetCollectionName" type="string" lcioInType="ReconstructedParticle"> Jets </parameter>
+
+		<!-- This is the output from FlavourTagInputsProcessor -->
+		<parameter name="FlavourTagInputsCollection" type="string" lcioInType="LCFloatVec"> FlavourTagInputs </parameter>
+
+		<!-- This is the output from TrueAngularJetFlavourProcessor -->
+		<parameter name="TrueJetFlavourCollection" type="string" lcioInType="LCIntVec"> TrueJetFlavour </parameter>
+
+		<!-- This is non-zero so files will be saved as XML -->
+		<parameter name="SaveAsXML" type="int"> 1 </parameter>  
+	</processor>
+</marlin>

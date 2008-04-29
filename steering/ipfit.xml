@@ -1,0 +1,130 @@
+<!--##########################################
+    #                                        #
+    #     Fit IP from selected Tracks        #
+    #                                        #
+    ##########################################-->
+
+<marlin>
+<execute>
+ <processor name="IPRPCutProcessor"/>
+ <processor name="MyPerEventIPFitterProcessor"/>
+ <processor name="MyLCIOOutputProcessor"/>
+</execute>
+
+<global>
+  <parameter name="LCIOInputFiles"> jettypeout.slcio </parameter>
+  <-- limit the number of processed records (run+evt): -->  
+  <!--Parameter name="MaxRecordNumber" value="5001" /-->  
+  <parameter name="SupressCheck" value="false" />  
+  <!-- <parameter name="GearXMLFile"> GearOutput.xml </parameter> -->  
+</global>
+  
+<processor name="MyPerEventIPFitterProcessor" type="PerEventIPFitterProcessor">
+ <!--Per Event IP fitter - trims tracks to reach probabililty threshold-->
+  <!--Manually set default error matrix of the primary vertex (cm) (lower symmetric)-->
+  <parameter name="DefaultIPError" type="FloatVec">2.5e-05 0 2.5e-05 0 0 0.0004  </parameter>
+  <!--Manually set default position of the IP vertex (cm)-->
+  <parameter name="DefaultIPPosition" type="FloatVec">0 0 0  </parameter>
+  <!--Name of the ReconstructedParticle collection contains tracks to fit-->
+  <parameter name="InputRPCollection" type="string" lcioInType="ReconstructedParticle">IPFitSelectedParticles </parameter>
+  <!--Name of the Vertex collection of the output ip vertex-->
+  <parameter name="OutputVertexCollection" type="string" lcioOutType="Vertex">IPVertex </parameter>
+  <!--Tracks are removed until this threshold is reached-->
+  <parameter name="ProbabilityThreshold" type="double">0.01 </parameter>
+</processor>
+
+ <processor name="IPRPCutProcessor" type="RPCutProcessor">
+ <!--RPCutProcessor - cuts tracks based on several criteria-->
+  <!--Name of the ReconstructedParticle collection which will be cut-->
+  <parameter name="InputRCPCollection" type="string" lcioInType="ReconstructedParticle">SelectedRecoParticles</parameter>
+  <!--Name of the output ReconstructedParticle collection when WriteNewCollection is true-->
+  <parameter name="OutputRCPCollection" type="string" lcioOutType="ReconstructedParticle">IPFitSelectedParticles</parameter>
+  <!--If true cuts tracks from the particle lists of particles in InputRCPCollection, if false just cuts particles from InputRCPCollection-->
+  <parameter name="SubParticleLists" type="bool">false </parameter>
+  <!--Name of the Track collection - this is just used to get the sub dectector indices-->
+  <parameter name="WriteNewCollection" type="bool">true </parameter>
+ 
+  <!--Enable a cut on the value of each tracks chi squared over degrees of freedom-->
+  <!--parameter name="a1_Chi2OverDOFEnable" type="bool">false </parameter-->
+  <!--If true values lower than the cut value will be cut, if false values higher will be cut-->
+  <!--parameter name="a2_Chi2OverDOFCutLowerThan" type="bool">false </parameter-->
+  <!--Cut Value-->
+  <!--parameter name="a3_Chi2OverDOFCutValue" type="float">10 </parameter-->
+  
+  <!--Enable a cut on the value of each tracks d0 (no correction for ref point position)-->
+  <parameter name="b1_D0Enable" type="bool">true </parameter>
+  <!--If true values lower than the cut value will be cut, if false values higher will be cut-->
+  <parameter name="b2_D0CutLowerThan" type="bool">false </parameter>
+  <!--Cut Value-->
+  <parameter name="b3_D0CutValue" type="float">5O </parameter>
+  
+  <!--Enable a cut on the value of each tracks d0 Error (sqrt(covariance(d0,d0))-->
+  <!--parameter name="c1_D0ErrEnable" type="bool">false </parameter-->
+  <!--If true values lower than the cut value will be cut, if false values higher will be cut-->
+  <!--parameter name="c2_D0ErrCutLowerThan" type="bool">false </parameter-->
+  <!--Cut Value-->
+  <!--parameter name="c3_D0ErrCutValue" type="float">0.025 </parameter-->
+  
+  <!--Enable a cut on the value of each tracks Z0 (no correction for ref point position)-->
+  <parameter name="d1_Z0Enable" type="bool">true </parameter>
+  <!--If true values lower than the cut value will be cut, if false values higher will be cut-->
+  <parameter name="d2_Z0CutLowerThan" type="bool">false </parameter>
+  <!--Cut Value-->
+  <parameter name="d3_Z0CutValue" type="float">50 </parameter>
+  
+  <!--Enable a cut on the value of each tracks z0 Error (sqrt(covariance(z0,z0))-->
+  <!--parameter name="e1_Z0ErrEnable" type="bool">false </parameter-->
+  <!--If true values lower than the cut value will be cut, if false values higher will be cut-->
+  <!--parameter name="e2_Z0ErrCutLowerThan" type="bool">true </parameter-->
+  <!--Cut Value-->
+  <!--parameter name="e3_Z0ErrCutValue" type="float">0.025 </parameter-->
+  
+  <!--Enable a cut on the value of each tracks PT (radial magnitude of ReconstructedParticle->momentum())-->
+  <!--parameter name="f1_PTEnable" type="bool">false </parameter-->
+  <!--If true values lower than the cut value will be cut, if false values higher will be cut-->
+  <!--parameter name="f2_PTCutLowerThan" type="bool">true </parameter-->
+  <!--Cut Value-->
+  <!--parameter name="f3_PTCutValue" type="float">0.1 </parameter-->
+  
+  <!--Enable a cut on the number seen hits in sub detectors - for more details see documentation-->
+  <!--parameter name="g1_DetectorHitsEnable" type="bool">false </parameter-->
+  <!--Sub detector names in same order as result of Track->getSubdetectorHitNumbers()-->
+  <!--parameter name="g2_SubDetectorNames" type="StringVec">VTX FTD SIT TPC </parameter-->
+  <!--Sub detector names of detectors defining the boundary between region 1 and region 2-->
+  <!--parameter name="g3_DetectorHitsBoundaryDetectorNames" type="StringVec">TPC FTD  </parameter-->
+  <!--Corresponding to the order of DetectorHitsBoundaryDetectorNames the max number of hits for each detector for region 1, if any of the sub detectors has a higher number of hits then region 2 is used-->
+  <!--parameter name="g4_DetectorHitsBoundaryCuts" type="IntVec">20 3  </parameter-->
+  <!--Sub detector names of detectors used for cutting in region 1-->
+  <!--parameter name="g5_DetectorHitsRegion1DetectorNames" type="StringVec">VTX  </parameter-->
+  <!--Corresponding to the order of DetectorHitsRegion1DetectorNames the minimum number of hits for region 1 for a track to pass-->
+  <!--parameter name="g6_DetectorHitsRegion1Cuts" type="IntVec">3  </parameter-->
+  <!--Sub detector names of detectors used for cutting in region 2-->
+  <!--parameter name="g7_DetectorHitsRegion2DetectorNames" type="StringVec">VTX  </parameter-->
+  <!--Corresponding to the order of DetectorHitsRegion2DetectorNames the minimum number of hits for region 2 for a track to pass-->
+  <!--parameter name="g8_DetectorHitsRegion2Cuts" type="IntVec">0  </parameter-->
+  
+  <!--Enable a cut on the PDG code of the Monte Carlo particle associated with the track. Set the codes to cut on in CutPIDS and the LCRelation collection name to the MC data in MonteCarloLCRelationCollection-->
+  <!--parameter name="h1_MCPIDEnable" type="bool">false </parameter-->
+  <!--A list of all the PDG codes of the associated Monte Carlo particle to cut-->
+  <!--parameter name="h2_CutPIDS" type="IntVec">0  </parameter-->
+  <!--Name of the LCRelation collection which links InputRCPCollection to the Monte Carlo data. Required only if MCPIDEnable is true-->
+  <parameter name="h3_MonteCarloLCRelationCollection" type="string" lcioInType="LCRelation">NotNeeded </parameter>
+  <!--Enable a cut on tracks with NaN parameters or covariances-->
+  <parameter name="i1_BadParametersEnable" type="bool">true </parameter>
+   
+  </processor>
+
+<processor name="MyLCIOOutputProcessor" type="LCIOOutputProcessor">
+  <!--Writes the current event to the specified LCIO outputfile. Needs to be the last ActiveProcessor.-->
+  <!--drops the named collections from the event-->
+  <!--parameter name="DropCollectionNames" type="StringVec">TPCHits HCalHits  </parameter-->
+  <!--drops all collections of the given type from the event-->
+  <!--parameter name="DropCollectionTypes" type="StringVec">SimTrackerHit SimCalorimeterHit  </parameter-->
+  <!-- name of output file -->
+  <parameter name="LCIOOutputFile" type="string">ipfitout.slcio </parameter>
+  <!--write mode for output file:  WRITE_APPEND or WRITE_NEW-->
+  <parameter name="LCIOWriteMode" type="string">WRITE_NEW </parameter>
+  <!--will split output file if size in kB exceeds given value - doesn't work with APPEND and NEW-->
+  <!--parameter name="SplitFileSizekB" type="int">1992294 </parameter-->
+</processor>
+</marlin>

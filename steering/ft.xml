@@ -1,0 +1,63 @@
+<!--##########################################
+    #                                        #
+    #     Example steering file for marlin   #
+    #                                        #
+    ##########################################-->
+
+
+<marlin>
+ <execute>
+  <processor name="MyFlavourTag"/>
+  <processor name="MyLCIOOutputProcessor"/>
+ </execute>
+
+ <global>
+  <parameter name="LCIOInputFiles"> ftiout.slcio </parameter>
+  <!-- limit the number of processed records (run+evt): -->  
+  <!--<parameter name="MaxRecordNumber" value="5001" /-->  
+  <parameter name="SupressCheck" value="false" />  
+  <!--- parameter name="GearXMLFile"> GearOutput.xml </parameter> -->  
+ </global>
+
+<processor name="MyLCIOOutputProcessor" type="LCIOOutputProcessor">
+ <!--Writes the current event to the specified LCIO outputfile. Needs to be the last ActiveProcessor.-->
+  <!--drops the named collections from the event-->
+  <!--parameter name="DropCollectionNames" type="StringVec">TPCHits HCalHits  </parameter-->
+  <!--drops all collections of the given type from the event-->
+  <!--parameter name="DropCollectionTypes" type="StringVec">SimTrackerHit SimCalorimeterHit  </parameter-->
+  <!-- name of output file -->
+  <parameter name="LCIOOutputFile" type="string">flavourtagout.slcio </parameter>
+  <!--write mode for output file:  WRITE_APPEND or WRITE_NEW-->
+  <parameter name="LCIOWriteMode" type="string">WRITE_NEW</parameter>
+  <!--will split output file if size in kB exceeds given value - doesn't work with APPEND and NEW-->
+  <!--parameter name="SplitFileSizekB" type="int">1992294 </parameter-->
+</processor>
+
+ <processor name="MyFlavourTag" type="FlavourTag">
+ <!--Performs a flavour tag using previously trained neural nets-->
+  <!--Name of the collection of ReconstructedParticles that is the jet-->
+  <parameter name="JetCollectionName" type="string" lcioInType="ReconstructedParticle">FTSelectedJets </parameter>
+  <!--Name of the LCFloatVec Collection that will be created to contain the flavour tag result-->
+  <parameter name="FlavourTagCollection" type="string" lcioOutType="LCFloatVec">FlavourTag </parameter>
+  <!--Name of the LCFloatVec Collection that contains the flavour tag inputs (in same order as jet collection)-->
+  <parameter name="FlavourTagInputsCollection" type="string" lcioInType="LCFloatVec">FlavourTagInputs </parameter>
+  <!--Filename of the previously trained 1 vertex b-tag net-->
+  <parameter name="Filename-b_net-1vtx" type="string">nets/b_net-1vtx.xml</parameter>
+  <!--Filename of the previously trained 2 vertex b-tag net-->
+  <parameter name="Filename-b_net-2vtx" type="string">nets/b_net-2vtx.xml</parameter>
+  <!--Filename of the previously trained 3 (or more) vertex b-tag net-->
+  <parameter name="Filename-b_net-3plusvtx" type="string">nets/b_net-3vtx.xml</parameter>
+  <!--Filename of the previously trained 1 vertex c-tag (b background only) net-->
+  <parameter name="Filename-bc_net-1vtx" type="string"> nets/bc_net-1vtx.xml</parameter>
+  <!--Filename of the previously trained 2 vertex c-tag (b background only) net-->
+  <parameter name="Filename-bc_net-2vtx" type="string"> nets/bc_net-2vtx.xml</parameter>
+  <!--Filename of the previously trained 3 (or more) vertex c-tag (b background only) net-->
+  <parameter name="Filename-bc_net-3plusvtx" type="string">nets/bc_net-3vtx.xml </parameter>
+  <!--Filename of the previously trained 1 vertex c-tag net-->
+  <parameter name="Filename-c_net-1vtx" type="string"> nets/c_net-1vtx.xml</parameter>
+  <!--Filename of the previously trained 2 vertex c-tag net-->
+  <parameter name="Filename-c_net-2vtx" type="string">nets/c_net-2vtx.xml </parameter>
+  <!--Filename of the previously trained 3 (or more) vertex c-tag net-->
+  <parameter name="Filename-c_net-3plusvtx" type="string"> nets/c_net-3vtx.xml</parameter>
+</processor>
+</marlin>

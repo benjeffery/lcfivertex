@@ -1,0 +1,109 @@
+The LCFI Vertex Package
+
+releases:
+
+ ----------
+| v00-02-02|
+ ----------
+
+   - LCFIVertex/vertex_lcfi/algo/src/pereventipfitter.cpp changed to use Kalman filter for
+     vertex fitting (reduces run time for PerEventIPFitter.cc by about a factor 100) 
+     (Kalman filter developed by S. Gorbunov, I. Kisel, 
+     Vertex Package interface: Tomas Lastovicka)
+
+   - RPCutProcessor: for suppression of hadronic interactions using MC information this 
+     processor is now updated to support arbitrary detector geometries (Kristian Harder)
+
+   - LCFIAIDAPlotProcessor: new processor providing diagnostics for flavour tag
+     (Victoria Martin)
+     Please note -BUILD_WITH="AIDAJNI" must be specified to cmake to build LCFIAIDAPlotProcessor
+   - LCFIVertex/macro/FlavourTagInputsOverlay.py: python script to create plots from 
+     output of LCFIAIDAPlotProcessor (Victoria Martin)
+   - LCFIVertex/macro/MakePurityVsEfficiencyRootPlot.C: root macro to plot purity vs
+     efficiency graphs that can be written out by PlotProcessor, if compiling with root 
+     option; permits results from different runs (e.g. with different settings) to be 
+     compared (Kristian Harder) 
+
+   - vertex charge calculation: correction of algorithm to agree with the procedure developed
+     with fast MC (Erik Devetak)
+   - separate VertexChargeProcessor, storing results in separate LCFloatVec collections;
+     this used to be done in FlavourTagInputsProcessor
+     (Erik Devetak)
+
+For further details on these changes, please see the documentation.
+
+(Sonja Hillert, S.Hillert1@physics.ox.ac.uk)
+
+-------------------------------------------------------------
+
+ ----------
+| v00-01-01|
+ ----------
+   - same code as v00-01
+     the first official release except that
+     cmake build is supported 
+
+
+Installation: (using cmake - new build tool for Marlin v00-09-08)
+-------------------------------------------------------------
+
+ 1st: edit the file BuildSetup.cmake according to your
+      system setup.
+
+ 2nd: type the following commands:
+
+    $ tar zxvf boost.tgz  # -- if not yet done --
+    $ mkdir build
+    $ cd build
+    $ cmake -C ../BuildSetup.cmake ..
+    $ make install
+
+    The documentation gets automatically built when you type
+    "make install". If you don't want this, set the variable
+    INSTALL_DOC to OFF in your BuildSetup.cmake
+    Afterwards you can still build it with:
+ 
+    $ make doc       -> all documentation (HTML+PDF)
+    $ make doc_html  -> for the HTML documentation
+    $ make doc_latex -> for the PDF documentation (refman.pdf)
+
+ For more information on CMake for the ILCSoftware check:
+ http://ilcsoft.desy.de/portal/general_documentation/index_eng.html
+
+ CMake's official website:
+ http://www.cmake.org
+
+(Jan Engels, jan.engels@desy.de)
+-------------------------------------------------------------
+
+Installation:
+If you already have MarlinReco installed and working then installing
+this package should only require placing the directory containing this
+file in $MARLIN/packages eg. $MARLIN/packages/LCFIVertex
+
+Documentation
+To build the documentation, which includes examples of how to run the
+processors in the package you will need doxygen 
+(http://www.doxygen.org/) and pdflatex for the pdf
+documentation. They are usually included with most linux distributions.
+Run the following commands from the LCFIVertex directory:
+
+For the HTML documentation:
+cd doc
+doxygen
+firefox html/index.html
+(or other browser)
+
+For the PDF documentation (a subset of the HTML which does not include
+all classes in the package):
+cd doc
+doxygen Doxyfile.latex
+cd latex
+make
+(a file refman.pdf is produced)
+
+
+Ben Jeffery b.jeffery1@physics.ox.ac.uk
+
+
+

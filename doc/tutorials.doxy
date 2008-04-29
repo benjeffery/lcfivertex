@@ -1,0 +1,187 @@
+/*! \page Tutorials Usage tutorials
+\section EventReconstruction Event reconstruction required
+
+The vertex finder and flavour tagging software expects a set of tracks - usually the tracks
+belonging to one jet in an event - as input. Initially, it is therefore necessary to
+<ul>
+<li> obtain digitized hits </li>
+<li> reconstruct tracks </li>
+<li> run the jet finder </li>
+<li> reconstruct the event vertex / IP, if running the flavour tagging code </li>
+<li> determine the MC true jet flavour if studying flavour tag purity, efficiency </li>
+<li> determine the MC true quark charge to study performance of quark charge reconstruction </li>
+</ul>
+The performance presented at the <a href="http://events.lal.in2p3.fr/conferences/ILCSoftware/">
+ILC software workshop, Orsay, May 2007</a> was obtained with the digitization and track
+cheating code developed by Alexei Raspereza. For the jet finding the Durham algorithm with a y-
+cut of 0.04 was used, as implemented in the Satoru jet finder within MarlinReco.
+
+An example of the steering for the first three of the above event reconstruction steps, used to obtain
+the shown results, is given in the steering file 
+<a href="../cheattracks+jetfind.xmlsteer">cheattracks+jetfind.xml</a>.
+<b> This example assumes that the detector geometry LDC01_05Sc is used - hit collection names will
+need to be changed in the steering file when running with a different geometry. </b>
+
+The event vertex or IP is needed for calculating the default flavour tag inputs. Since no code to do
+this was yet available in MarlinReco, the LCFI group implemented a procedure similar to the one
+used in the
+<a href="http://berggren.home.cern.ch/berggren/sgv.html"> SGV fast MC </a>. This should only be 
+considered as spaceholder for a future improved procedure in which for the vertex position in the 
+x-y-plane one would average over tracks from a number of consecutive events. The current algorithm 
+is implemented in the PerEventIPFitterProcessor and run by calling Marlin with the steering file
+<a href="../ipfit.xmlsteer">ipfit.xml</a>.
+
+The true flavour of a jet is based on the MC record in the event. It searches the event for the
+leading hadron, and if this is a heavy flavour particle determines which of the jets in the event is
+closest in angle. For heavy flavour jets, based on the leading hadron MC information also the quark
+charge of the heavy flavour hadron is determined. Further details can be found in the documentation 
+of the TrueAngularJetFlavourProcessor. This part of the reconstruction is performed by running Marlin 
+with the <a href="../truejetflavour.xmlsteer">truejetflavour.xml</a> steering file.
+
+
+\section ZVTOPHowTo How to run the vertex finder ZVTOP
+
+Make sure the necessary \ref EventReconstruction "event reconstruction steps" have been run 
+in advance. The vertex finder ZVTOP has two branches: the standard branch 
+\ref ZVTOPZVRESProcessor "ZVRES", based purely on topological information, and the more specialized
+branch \ref ZVTOPZVKINProcessor "ZVKIN", which uses kinematic information from heavy flavour decay 
+chains in addition. Flavour tagging for ILC physics simulation so far has been performed
+using ZVRES only. The use of ZVKIN for this purpose is yet to be explored. It should also be
+noted that ZVKIN parameters have not yet been tuned for ILC conditions. This vertexing algorithm is
+generally less tested and optimised in terms of runtime than the ZVRES branch.
+
+For each of the two branches, a dedicated steering file is provided, named 
+<a href="../zvres.xmlsteer">zvres.xml</a> and
+<a href="../zvkin.xmlsteer">zvkin.xml</a>, respectively.
+The output of ZVTOP consists of one collection storing the vertices that were found, one collection
+holding the corresponding ReconstructedParticles decaying at these vertex positions and one
+collection containing one ReconstructedParticle per jet which gives access to the full decay chain. 
+Further details on the storage of the output can be found in the \ref LCIO.
+
+
+\section FlavourTag How to flavour tag jets
+
+Before running the flavour tag, make sure the necessary 
+\ref EventReconstruction "event reconstruction processors" and \ref ZVTOPHowTo "ZVTOP" have been run. 
+In the default flavour tagging algorithm information from the vertex finder is both directly used as 
+input for the tagging neural networks and to determine, which set of neural networks is used. 
+You can either begin by \ref NetworkTraining "training new neural nets" or use pre-trained nets. 
+One set of nets, trained with input from the fast MC SGV, is provided with the Vertex Package. These nets 
+are available from the new repository 
+<b><a href="http://www-zeuthen.desy.de/lc-cgi-bin/cvsweb.cgi/?sortby=file&hideattic=1&hidenonreadable=1&logsort=date&f=u&cvsroot=tagnet&path="> tagnet </a> </b> 
+for flavour tag neural nets in the 
+<a href="http://www-zeuthen.desy.de/linear_collider/"> Zeuthen CVS repository </a>. 
+
+Flavour tag inputs are calculated by running Marlin with the steering file 
+<a href="../fti.xmlsteer">fti.xml</a>. As input it requires the LCIO file with information from ZVTOP 
+and the IP fit processor (default filename zvresout.slcio). The flavour tag inputs are written out into 
+collections of LCFloatVec's as described in more detail in the \ref LCIO.
+
+The neural network output values are obtained from an independent Marlin processor; the 
+corresponding example steering file is 
+<a href="../ft.xmlsteer">ft.xml</a>. It requires the LCIO file written out in the 
+Marlin run with 
+<a href="../fti.xmlsteer">fti.xml</a>, which is by default called ftiout.slcio. The default algorithm 
+is based on nine neural networks, three for each of the three classes of jets, namely those with 1, 2 and 3 
+or more vertices found by ZVTOP. It thus provides three output values for each jet: a b-tag value, a 
+c-tag value for arbitrary jet sample composition and a c-tag value assuming the background is 
+known to consist of b-jets only (yielding improved c-tag purity). These are stored as components
+"BTag", "CTag" and "BCTag" of an LCFloatVec collection. The collection name - FlavourTag by default - 
+can be specified in the steering file. 
+This collection, along with the information from the input-LCIO file, is written into an LCIO output 
+file, named flavourtagout.slcio in the example.
+
+
+\section PurityEfficiency How to evaluate and plot flavour tag purity vs efficiency
+
+Flavour tag purity as function of efficiency is a measure of how well the flavour tag performs for a 
+certain mix of jet flavours. The Vertex Package provides two processors to calculate purity and 
+efficiency: the PlotProcessor and the LCFIAIDAPlotProcessor. An example how to call these processors is 
+given in the steering file <a href="../ftplot.xmlsteer">ftplot.xml</a>. 
+
+The PlotProcessor writes out a table with the resulting efficiency and purity values as well as the cut
+values on the neural net outputs these correspond to, into a comma separated value file. 
+Additionally, if the root library is linked in at compile time by defining the preprocessor flag 
+USEROOT, the corresponding graphs are written out into a root-file. 
+These graphs can be plotted using the root-macro MakePurityVsEfficiencyRootPlot.C provided in the
+macro directory. 
+This macro also allows to plot the resulting graphs from two different runs onto the same
+canvas to compare performance.
+
+The LCFIAIDAPlotProcessor provides further diagnostic tools for the flavour tag.
+Since different neural networks are used for the cases that 1-, 2- or at least 3 vertices are found,
+purity and efficiency are calculated separately for these cases. 
+Graphs in AIDA format are created for purity vs efficiency and for the flavour leakage (i.e. the
+"efficiency" of tagging the wrong flavour) as function of efficiency - e.g. the leakage of usd-jets 
+into the c-tagged sample.
+Also, distributions of all flavour tag input variables, the vertex charge and of the neural net
+output variables are created separately for the 1-, 2- and 3 or more vertex case.
+Optionally information can be written out into an AIDA tuple and in text format, for further 
+details see the LCFIAIDAPlotProcessor documentation.
+Output from the LCFIAIDAPlotProcessor can be plotted using the python script FlavourTagInputsOverlay.py
+from the macro directory.
+
+
+\section NetworkTraining How to train new neural networks for flavour tagging
+
+The Vertex Package is very flexible, so it is straightforward to entirely change the flavour tagging 
+procedure. This is just an overview of changes possible, pointing out where to find further details.
+
+In the simplest case that requires retraining, the tagging procedure itself is not changed. For 
+example, one might want to retrain the networks after tuning ZVTOP, or changing other boundary 
+conditions, such as track selection or composition of the input sample (as may happen when 
+studying a specific physics channel). For this purpose, an example steering file
+<a href="../trainNeuralNets.xmlsteer">trainNeuralNets.xml</a> showing how to run the network training 
+processor, is provided. You may choose to retrain only some of the networks - each can be enabled in 
+the steering file independently of the others.
+
+Changes to the tagging algorithm will require writing new processors and recompiling Marlin. A 
+simple example would be the change of the network architecture, such as number or type of 
+nodes and / or internal layers. Please refer to the \ref NeuralNet "neural network documentation"
+ for details on how networks can be defined. As long as the number and choice of input variables 
+remains unchanged, only the training processor NeuralNetTrainerProcessor will have to be modified 
+(or a new one added). 
+
+More complex modifications of processors are necessary when changes of the input variables are 
+involved. This will require changes to at least three processors: the FlavourTagInputsProcessor 
+calculating the inputs, the NeuralNetTrainerProcessor for training and the FlavourTagProcessor
+for obtaining the network outputs in the subsequent analysis. If further variables are to be added, 
+this might additionally require some familiarity with the internal structure of \ref ZVTOP. 
+The current way of writing out the inputs into an LCFloatVec collection permits further variables to 
+be added in a straightforward way - make sure to also update the section of the processor called at 
+the start of the Marlin run, where the variable names are defined.
+
+Changes to the input variables used in the training processor obviously require that the 
+corresponding changes also be made in the processor obtaining the network outputs. In order to
+keep track of networks used and to allow shared use of networks within the community, a new
+<a href="http://www-zeuthen.desy.de/lc-cgi-bin/cvsweb.cgi/?sortby=file&hideattic=1&hidenonreadable=1&logsort=date&f=u&cvsroot=tagnet&path="> cvs repository tagnet </a>has been set up in the 
+<a href="http://www-zeuthen.desy.de/linear_collider/"> Zeuthen cvs area </a>.
+<b>We strongly recommend submission of networks used for your studies to this repository</b>, 
+along with a description of the boundary conditions for training - make sure these descriptions 
+are as complete as possible,including details on training sample and any changes to the defaults 
+made (track selection, ZVTOP settings, addition of input variables, if possible with a reference 
+to the code, with which these have been obtained). Providing this information will save time when 
+it comes to comparisons of analyses made within different frameworks / detector concepts etc.
+
+
+\section VertexCharge How to determine the vertex charge
+
+From version v00-02-02 onwards, the vertex charge is reconstructed in a dedicated processor,
+the VertexChargeProcessor, and stored in its own LCFloatVec collections.
+Two vertex charge variables are calculated, one assuming the jet is a b-jet, the other
+assuming it is a c-jet. 
+Two steering files are provided: <a href="../Bvertexcharge.xmlsteer">Bvertexcharge.xml</a>, 
+to be run first, producing an output LCFloatVec collection which is by default named Bcharge, and 
+<a href="../Cvertexcharge.xmlsteer">Cvertexcharge.xml</a>, to be run subsequently and producing an 
+output LCFloatVec collection with default name Ccharge.
+
+
+\section TrackSelection How to apply track selection cuts
+
+The various track selection criteria used in the code - which differ between IP determination 
+(cf \ref IPCuts), ZVTOP (cf \ref ZVTOPCuts) and the calculation of the flavour tag inputs 
+(cf \ref FlavourTagInputsCuts) - are implemented by a flexible RPCutProcessor that 
+runs on reconstructed particles, containing the tracks in question. 
+
+*/
+

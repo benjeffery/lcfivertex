@@ -1,0 +1,57 @@
+<!--##########################################
+    #                                        #
+    #     Create Vertex Charge for B         #
+    #                                        #
+    ##########################################-->
+
+
+<marlin>
+ <execute>
+  <processor name="MyVertexChargeProcessor"/>
+  <processor name="MyLCIOOutputProcessor"/>
+ </execute>
+
+ <global>
+  <parameter name="LCIOInputFiles"> flavourtagout.slcio  </parameter>
+  <!-- limit the number of processed records (run+evt): -->  
+  <!--parameter name="MaxRecordNumber" value="5001" /-->  
+  <parameter name="SupressCheck" value="false" />  
+  <!--- parameter name="GearXMLFile"> GearOutput.xml </parameter> -->  
+ </global>
+
+ <processor name="MyVertexChargeProcessor" type="VertexChargeProcessor">
+ <!--VertexChargeProcessor - takes a set of vertices as a decay chain with its associated jet and calculates the vertex charge.-->
+  <!--Parameter determining whether all tracks from secondary are included in the B-Charge-->
+  <!--parameter name="ChargeAllSecondaryTracks" type="bool">true </parameter-->
+  <!--Upper cut on track distance of closest approach to the seed axis for the B-Charge -->
+  <!--parameter name="ChargeCloseapproachCut" type="double">1 </parameter-->
+  <!--Cut determining the maximum L/D for the B-Charge-->
+  <!--parameter name="ChargeLoDCutmax" type="double">2.5 </parameter-->
+  <!--Cut determining the minimum L/D for the B-Charge-->
+  <!--parameter name="ChargeLoDCutmin" type="double">0.18 </parameter-->
+  <!--Name of the ReconstructedParticle collection that represents decay chains-->
+  <parameter name="DecayChainRPCollection" type="string" lcioInType="ReconstructedParticle">ZVRESDecayChains</parameter>
+  <!--Name of the Vertex collection that contains the primary vertex (Optional)-->
+  <parameter name="IPVertexCollection" type="string" lcioInType="Vertex">IPVertex </parameter>
+  <!--Name of the ReconstructedParticle collection that represents jets-->
+  <parameter name="JetRPCollection" type="string" lcioInType="ReconstructedParticle">FTSelectedJets </parameter>
+  <!--Name of the LCFloatVec Collection that will be created to contain the flavour tag inputs-->
+  <parameter name="VertexChargeCollection" type="string" lcioOutType="LCFloatVec">BCharge </parameter>
+</processor>
+
+
+<processor name="MyLCIOOutputProcessor" type="LCIOOutputProcessor">
+<!--Writes the current event to the specified LCIO outputfile. Needs to be the last ActiveProcessor.-->
+  <!--drops the named collections from the event-->
+  <!--parameter name="DropCollectionNames" type="StringVec">TPCHits HCalHits  </parameter-->
+  <!--drops all collections of the given type from the event-->
+  <!--parameter name="DropCollectionTypes" type="StringVec">SimTrackerHit SimCalorimeterHit  </parameter-->
+  <!-- name of output file -->
+  <parameter name="LCIOOutputFile" type="string">bchargeout.slcio </parameter>
+  <!--write mode for output file:  WRITE_APPEND or WRITE_NEW-->
+  <parameter name="LCIOWriteMode" type="string">WRITE_NEW </parameter>
+  <!--will split output file if size in kB exceeds given value - doesn't work with APPEND and NEW-->
+  <!--parameter name="SplitFileSizekB" type="int">1992294 </parameter-->
+</processor>
+
+</marlin>
